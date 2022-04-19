@@ -15,7 +15,7 @@
 
         project = devTools:
           let addBuildTools = (t.flip hl.addBuildTools) devTools;
-          in haskellPackages.developPackage {
+          in haskell.packages.ghc901.developPackage {
             root = lib.sourceFilesBySuffices ./. [ ".cabal" ".hs" ];
             name = name;
             returnShellEnv = !(devTools == [ ]);
@@ -35,8 +35,7 @@
 
         defaultPackage = self.packages.${system}.pkg;
 
-        devShell = project (with haskellPackages; [
-          cabal-fmt
+        devShell = project (with haskell.packages.ghc901; [
           cabal-install
           haskell-language-server
           hlint
