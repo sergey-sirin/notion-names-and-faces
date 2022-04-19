@@ -1,12 +1,15 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE StrictData #-}
 
 module Json where
 
 import Control.Monad (mzero)
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (Object), (.:))
 import GHC.Generics
+
+{-# ANN module ("HLint: ignore Use newtype instead of data" :: String) #-}
 
 data QueryResult = QueryResult
   { results :: [Result]
@@ -19,12 +22,13 @@ data Result = Result
   deriving (Generic, Show, FromJSON)
 
 data Properties = Properties
-  { name :: Name
+  { name :: Name,
+    telegram :: Telegram
   }
   deriving (Generic, Show)
 
 instance FromJSON Properties where
-  parseJSON (Object v) = Properties <$> v .: "Name"
+  parseJSON (Object v) = Properties <$> v .: "Name" <*> v .: "Telegram"
   parseJSON _ = mzero
 
 data Name = Name

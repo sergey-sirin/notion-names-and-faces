@@ -42,7 +42,6 @@ app notionApiToken req respond =
                 & header "Notion-Version" .~ ["2022-02-22"]
         r <- postWith opts "https://api.notion.com/v1/databases/67738a4428bb40c08968d9ce261342bf/query" (mempty :: ByteString)
         let Just z = Aeson.decode @QueryResult $ r ^. responseBody
-        print z
         respond $ responseLBS status200 [] $ renderBS (html $ getPersons z)
     )
 
@@ -60,3 +59,4 @@ personCard _data =
   section_ $ do
     img_ [src_ "./face.jpg", style_ "width: 100px;"]
     div_ . toHtml $ name _data
+    div_ . toHtml $ telegram _data
