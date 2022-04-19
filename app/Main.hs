@@ -1,4 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 
@@ -13,6 +14,8 @@ import Data.ByteString (ByteString)
 import Data.ByteString.Char8 qualified as B8
 import Data.ByteString.Lazy qualified as BL
 import Data.ByteString.Lazy.Char8 qualified as BL8
+import Data.Maybe (fromJust)
+import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as T
 import Data.Text.Lazy.IO qualified as TL
@@ -21,11 +24,15 @@ import Lucid
 import Network.HTTP.Types (status200)
 import Network.Wai
 import Network.Wai.Handler.Warp (run)
-import Network.Wreq (defaults, getWith, header, postWith, responseBody)
+import Network.Wreq qualified as W (Options, defaults, getWith, header, postWith, responseBody)
 import Network.Wreq.Lens (responseBody)
 import Parse
-import Parse (Person (avatarUri))
 import System.Environment (getEnv)
+
+fetchPersonText :: W.Options -> Person -> IO [T.Text]
+fetchPersonText opts (Person {personId}) = do
+  r' <- W.getWith opts $ "https://api.notion.com/v1/blocks/" <> T.unpack personId <> "/children"
+  pure $ getText $ fromJust $ Aeson.decode @QueryResult $ r' ^. responseBody
 
 main :: IO ()
 main = do
@@ -39,19 +46,17 @@ app notionApiToken req respond =
     (putStrLn "Cleaning up")
     ( do
         let opts =
-              defaults
-                & header "Authorization" .~ [notionApiToken]
-                & header "Notion-Version" .~ ["2022-02-22"]
-        r <- postWith opts "https://api.notion.com/v1/databases/67738a4428bb40c08968d9ce261342bf/query" (mempty :: ByteString)
+              W.defaults
+                & W.header "Authorization" .~ [notionApiToken]
+                & W.header "Notion-Version" .~ ["2022-02-22"]
+        r <- W.postWith opts "https://api.notion.com/v1/databases/67738a4428bb40c08968d9ce261342bf/query" (mempty :: ByteString)
         let z = Aeson.eitherDecode @QueryResult $ r ^. responseBody
         let Right zz = z
+        let persons = getPersons zz
 
-        r' <- getWith opts "https://api.notion.com/v1/blocks/0a937e74008f4393955d59dddb87988d/children"
-        let z' = Aeson.eitherDecode @QueryResult $ r' ^. responseBody
-        let Right zz' = z'
-        BL8.putStrLn $ Aeson.encode $ getText zz'
+        fetchPersonText opts (head persons) <&> mconcat >>= T.putStrLn
 
-        respond $ responseLBS status200 [] $ renderBS (html $ getPersons zz)
+        respond $ responseLBS status200 [] $ renderBS (html persons)
     )
 
 html :: [Person] -> Html ()
