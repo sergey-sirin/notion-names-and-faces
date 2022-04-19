@@ -12,6 +12,7 @@ import Data.Aeson.Lens
 import Data.ByteString (ByteString)
 import Data.ByteString.Char8 qualified as B8
 import Data.ByteString.Lazy qualified as BL
+import Data.ByteString.Lazy.Char8 qualified as BL8
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as T
 import Data.Text.Lazy.IO qualified as TL
@@ -20,7 +21,7 @@ import Lucid
 import Network.HTTP.Types (status200)
 import Network.Wai
 import Network.Wai.Handler.Warp (run)
-import Network.Wreq (defaults, header, postWith, responseBody)
+import Network.Wreq (defaults, getWith, header, postWith, responseBody)
 import Network.Wreq.Lens (responseBody)
 import Parse
 import Parse (Person (avatarUri))
@@ -43,8 +44,13 @@ app notionApiToken req respond =
                 & header "Notion-Version" .~ ["2022-02-22"]
         r <- postWith opts "https://api.notion.com/v1/databases/67738a4428bb40c08968d9ce261342bf/query" (mempty :: ByteString)
         let z = Aeson.eitherDecode @QueryResult $ r ^. responseBody
-        print z
         let Right zz = z
+
+        r' <- getWith opts "https://api.notion.com/v1/blocks/0a937e74008f4393955d59dddb87988d/children"
+        let z' = Aeson.eitherDecode @QueryResult $ r' ^. responseBody
+        let Right zz' = z'
+        BL8.putStrLn $ Aeson.encode $ getText zz'
+
         respond $ responseLBS status200 [] $ renderBS (html $ getPersons zz)
     )
 

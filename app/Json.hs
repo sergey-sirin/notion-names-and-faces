@@ -6,6 +6,7 @@
 
 module Json where
 
+import Control.Applicative
 import Control.Monad (mzero)
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (Object), (.:))
 import Data.Text (Text)
@@ -18,10 +19,27 @@ data QueryResult = QueryResult
   }
   deriving (Generic, Show, FromJSON)
 
-data Result = Result
-  { properties :: Properties
-  }
-  deriving (Generic, Show, FromJSON)
+data Result
+  = Page
+      { properties :: Properties,
+        pid :: Text
+      }
+  | Block
+      { paragraph :: Paragraph
+      }
+  deriving (Generic, Show)
+
+instance FromJSON Result where
+  parseJSON (Object v) =
+    (<|>)
+      ( Page
+          <$> v .: "properties"
+          <*> v .: "id"
+      )
+      ( Block
+          <$> v .: "paragraph"
+      )
+  parseJSON _ = mzero
 
 data Properties = Properties
   { name :: Name,
@@ -44,9 +62,15 @@ data Name = Name
   deriving (Generic, Show, FromJSON)
 
 data Telegram = Telegram
-  { rich_text :: [NotionText]
+  { t_rich_text :: [NotionText]
   }
-  deriving (Generic, Show, FromJSON)
+  deriving (Generic, Show)
+
+instance FromJSON Telegram where
+  parseJSON (Object v) =
+    Telegram
+      <$> v .: "rich_text"
+  parseJSON _ = mzero
 
 data Photo = Photo
   { files :: [File]
@@ -60,6 +84,11 @@ data File = File
 
 data File' = File'
   { url :: Text
+  }
+  deriving (Generic, Show, FromJSON)
+
+data Paragraph = Paragraph
+  { rich_text :: [NotionText]
   }
   deriving (Generic, Show, FromJSON)
 
