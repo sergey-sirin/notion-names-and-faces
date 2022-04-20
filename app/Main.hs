@@ -6,6 +6,7 @@
 
 module Main where
 
+import Control.Concurrent.Async (mapConcurrently)
 import Control.Lens
 import Control.Monad (forM_)
 import Data.Aeson qualified as Aeson
@@ -23,14 +24,13 @@ import Network.Wreq qualified as W (Options, defaults, getWith, header, postWith
 import Network.Wreq.Lens (responseBody)
 import Parse
 import System.Environment (getEnv)
-import Control.Concurrent.Async (mapConcurrently)
 
 data State = State
   { notionApiToken :: ByteString,
     persons :: [Person]
   }
 
-fetchPersonText :: W.Options -> Person -> IO [T.Text]
+fetchPersonText :: W.Options -> Person -> IO (Maybe [T.Text])
 fetchPersonText opts (Person {personId}) = do
   r' <- W.getWith opts $ "https://api.notion.com/v1/blocks/" <> T.unpack personId <> "/children"
   T.putStrLn personId
@@ -52,8 +52,8 @@ main = do
   let Right zz = z
   let persons_ = getPersons zz
 
-  texts <- mapConcurrently (fmap T.unwords . fetchPersonText opts) persons_
-  let persons = zipWith (\p t -> p {bio = Just t}) persons_ texts
+  texts <- mapConcurrently (fetchPersonText opts) $ take 5 persons_
+  let persons = zipWith (\p t -> p {bio = t}) persons_ $ (fmap . fmap) T.unwords texts
 
   run 3000 (app $ State {..})
 
@@ -72,8 +72,19 @@ html _data =
 
 personCard :: Person -> Html ()
 personCard _data =
-  section_ [style_ "transform: rotate(4deg);"] $ do
+  section_ [style_ "transform: rotate(4deg); width: 300px;"] $ do
     img_ [src_ $ fromMaybe "https://i.redd.it/vb4e2jl0pfz21.jpg" $ avatarUri _data, style_ "width: 100px; height: 100px; object-fit: cover;"]
     div_ . toHtml $ name _data
     div_ . toHtml $ fromMaybe "no telegrammzz(" $ telegram _data
-    div_ . toHtml $ fromMaybe "" $ bio _data
+    let tarakan =
+          mconcat . replicate 3 . T.unwords $
+            [ "я весёлый таракан",
+              "я бегу бегу я весёлый",
+              "таракан я бегу бегу",
+              "нефига ты не попал",
+              "я все равно убежал",
+              "я весёлый таракан",
+              "я бегу бегу",
+              "все равно я убежал"
+            ]
+    div_ . toHtml $ fromMaybe tarakan $ bio _data

@@ -6,6 +6,7 @@
 module Parse where
 
 import Data.List (zipWith5)
+import Data.Maybe (catMaybes, listToMaybe, mapMaybe)
 import Data.Text (Text)
 import Json
 
@@ -30,10 +31,14 @@ getPersons z = do
   let personIds = pid <$> results z
   zipWith5 Person names telegrams avatarUris personIds (repeat Nothing)
 
-getText :: QueryResult -> [Text]
-getText = fmap getBlockText . results
+listToMaybe' :: [a] -> Maybe [a]
+listToMaybe' [] = Nothing
+listToMaybe' x = Just x
 
-getBlockText :: Result -> Text
-getBlockText EmptyBlock = mempty
-getBlockText (Block {paragraph}) = mconcat . fmap plain_text . rich_text $ paragraph
-getBlockText (Page _ _) = error "Only works on blocks!"
+getText :: QueryResult -> Maybe [Text]
+getText = listToMaybe' . mapMaybe getBlockText . results
+
+getBlockText :: Result -> Maybe Text
+getBlockText EmptyBlock = Nothing
+getBlockText (Block {paragraph}) = Just $ mconcat . fmap plain_text . rich_text $ paragraph
+getBlockText (Page _ _) = Nothing
