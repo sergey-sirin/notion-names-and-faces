@@ -23,6 +23,7 @@ import Network.Wreq qualified as W (Options, defaults, getWith, header, postWith
 import Network.Wreq.Lens (responseBody)
 import Parse
 import System.Environment (getEnv)
+import Control.Concurrent.Async (mapConcurrently)
 
 data State = State
   { notionApiToken :: ByteString,
@@ -51,7 +52,7 @@ main = do
   let Right zz = z
   let persons_ = getPersons zz
 
-  texts <- mapM (fmap T.unwords . fetchPersonText opts) persons_
+  texts <- mapConcurrently (fmap T.unwords . fetchPersonText opts) persons_
   let persons = zipWith (\p t -> p {bio = Just t}) persons_ texts
 
   run 3000 (app $ State {..})
