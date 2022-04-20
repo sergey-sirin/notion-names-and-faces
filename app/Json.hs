@@ -6,9 +6,9 @@
 
 module Json where
 
-import Control.Applicative
 import Control.Monad (mzero)
-import Data.Aeson (FromJSON (..), ToJSON (..), Value (Object), (.:))
+import Data.Aeson (FromJSON (..), Value (Object), (.:))
+import Data.Foldable (asum)
 import Data.Text (Text)
 import GHC.Generics
 
@@ -25,20 +25,23 @@ data Result
         pid :: Text
       }
   | Block
-      { paragraph :: Paragraph
+      { paragraph :: Paragraph,
+        _type :: Text
       }
+  | EmptyBlock
   deriving (Generic, Show)
 
 instance FromJSON Result where
   parseJSON (Object v) =
-    (<|>)
-      ( Page
+    asum
+      [ Page
           <$> v .: "properties"
-          <*> v .: "id"
-      )
-      ( Block
+          <*> v .: "id",
+        Block
           <$> v .: "paragraph"
-      )
+          <*> v .: "type",
+        pure EmptyBlock
+      ]
   parseJSON _ = mzero
 
 data Properties = Properties
