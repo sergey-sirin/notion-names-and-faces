@@ -40,6 +40,10 @@ executable names-and-faces
                     , lens
                     , lens-aeson
                     , lucid
+                    , list-t
+                    , stm
+                    , stm-containers
+                    , hashable
                     , http-types
                     , postgresql-simple
                     , warp
@@ -47,4 +51,4 @@ executable names-and-faces
                     , wai
     hs-source-dirs:   app
     default-language: Haskell2010
-    ghc-options:      -Wall
+    ghc-options:      -Wall -threaded -with-rtsopts=-N
