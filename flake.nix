@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-21.11";
+    nixpkgs.url = "github:nixos/nixpkgs";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -15,7 +15,7 @@
 
         project = devTools:
           let addBuildTools = (t.flip hl.addBuildTools) devTools;
-          in haskell.packages.ghc901.developPackage {
+          in haskell.packages.ghc902.developPackage {
             root = (lib.sourceFilesBySuffices ./. [ ".cabal" ".hs" "LICENSE" ]);
             name = name;
             returnShellEnv = !(devTools == [ ]);
@@ -35,7 +35,7 @@
 
         defaultPackage = self.packages.${system}.pkg;
 
-        devShell = project (with haskell.packages.ghc901; [
+        devShell = project (with haskell.packages.ghc902; [
           cabal-install
           haskell-language-server
           hlint
