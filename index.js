@@ -1,9 +1,19 @@
+const cardWidth = document.querySelector('.personcard').offsetWidth;
+const cardHeight = document.querySelector('.personcard').offsetHeight;
+const maxWidth = document.documentElement.clientWidth - cardWidth;
+const maxHeight = document.documentElement.clientHeight - cardHeight;
+
 function popup(name, bio) {
 	alert(name + '\n\n' + bio);
 }
 
+function centroid(el) {
+	return [el.x + cardWidth / 2, el.y + cardHeight / 2];
+}
+
 function distance(el1, el2) {
-	return Math.sqrt((el2.x - el1.x) ** 2 + (el2.y - el1.y) ** 2);
+	const [[el1x, el1y], [el2x, el2y]] = [centroid(el1), centroid(el2)];
+	return Math.sqrt((el2x - el1x) ** 2 + (el2y - el1y) ** 2);
 }
 
 function bounce(el) {
@@ -14,11 +24,6 @@ function bounce(el) {
 function getRandomArbitrary(min, max) {
 	return Math.random() * (max - min) + min;
 }
-
-const cardWidth = document.querySelector('.personcard').offsetWidth;
-const cardHeight = document.querySelector('.personcard').offsetHeight;
-const maxWidth = document.documentElement.clientWidth - cardWidth;
-const maxHeight = document.documentElement.clientHeight - cardHeight;
 
 const state = Array.prototype.map.call(document.getElementsByClassName('personcard'), e => {
 	return {
@@ -36,7 +41,7 @@ const state = Array.prototype.map.call(document.getElementsByClassName('personca
 		for (el of state) {
 			// touch another card
 			for (el2 of state.filter(x => x != el)) {
-				if (distance(el, el2) < 50) { bounce(el); break; }
+				if (distance(el, el2) < cardWidth) { bounce(el); break; }
 			}
 
 			// screen borders
