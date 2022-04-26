@@ -3,12 +3,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE NumericUnderscores #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use underscore" #-}
 
 module Main where
 
 import Control.Concurrent.Async (concurrently_, mapConcurrently_)
 import Control.Lens
-import Control.Monad (forM_)
+import Control.Monad (forM_, forever)
 import Control.Monad.STM
 import Data.Aeson qualified as Aeson
 import Data.ByteString (ByteString)
@@ -27,6 +30,7 @@ import Network.Wreq.Lens (responseBody)
 import Parse
 import StmContainers.Set qualified as Set
 import System.Environment (getEnv)
+import Control.Concurrent (threadDelay)
 
 data State = State
     { notionApiToken :: ByteString
@@ -60,13 +64,19 @@ main = do
     let augmentPerson seedPerson = do
             t <- fetchPersonText opts seedPerson
             pure $ seedPerson{bio = T.unwords <$> t}
-    let augmentAndInsert seedPerson = do
+    let augmentAndUpsert seedPerson = do
             p <- augmentPerson seedPerson
-            atomically $ (`Set.insert` persons) p
+            atomically $ do
+                -- XXX: upsert w/focus?
+                Set.delete p persons
+                Set.insert p persons
 
     concurrently_
         (run 3000 (app $ State{..}))
-        (mapConcurrently_ augmentAndInsert persons_)
+        (forever $ do
+            mapConcurrently_ augmentAndUpsert persons_
+            threadDelay 6_000_000_000
+        )
 
 app :: State -> Application
 app (State{..}) _ respond = do
