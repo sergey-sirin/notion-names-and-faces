@@ -11,13 +11,22 @@ function bounce(el) {
 	el.dy = -el.dy;
 }
 
+function getRandomArbitrary(min, max) {
+	return Math.random() * (max - min) + min;
+}
+
+const cardWidth = document.querySelector('.personcard').offsetWidth;
+const cardHeight = document.querySelector('.personcard').offsetHeight;
+const maxWidth = document.documentElement.clientWidth - cardWidth;
+const maxHeight = document.documentElement.clientHeight - cardHeight;
+
 const state = Array.prototype.map.call(document.getElementsByClassName('personcard'), e => {
 	return {
 		dom: e,
-		x: Math.random() * 100, // XXX
-		dx: Math.random() * 10,
-		y: Math.random() * 100, // XXX
-		dy: Math.random() * 10, 
+		x: getRandomArbitrary(cardWidth, maxWidth),
+		dx: getRandomArbitrary(0.75, 1.5),
+		y: getRandomArbitrary(cardHeight, maxHeight),
+		dy: getRandomArbitrary(0.75, 1.5),
 	};
 }
 );
@@ -25,24 +34,25 @@ const state = Array.prototype.map.call(document.getElementsByClassName('personca
 {
 	const cb = () => {
 		for (el of state) {
-			el.dom.style.left = el.x + 'px';
-			el.dom.style.top = el.y + 'px';
-			el.x += el.dx;
-			el.y += el.dy;
-
+			// touch another card
 			for (el2 of state.filter(x => x != el)) {
-				if (distance(el, el2) < 50) { bounce(el); }
+				if (distance(el, el2) < 50) { bounce(el); break; }
 			}
 
 			// screen borders
 			if (el.x < 0 || 
-			    el.x > document.documentElement.clientWidth - document.querySelector('.personcard').offsetWidth) {
+			    el.x > maxWidth) {
 				el.dx = -el.dx;
 			}
 			if (el.y < 0 || 
-			    el.y > document.documentElement.clientHeight - document.querySelector('.personcard').offsetHeight) {
+			    el.y > maxHeight) {
 				el.dy = -el.dy;
 			}
+
+			el.dom.style.left = el.x + 'px';
+			el.dom.style.top = el.y + 'px';
+			el.x += el.dx;
+			el.y += el.dy;
 		}
 		window.requestAnimationFrame(cb);
 	};
