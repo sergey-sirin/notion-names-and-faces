@@ -89,6 +89,7 @@ html _data =
     doctypehtml_ $ do
         head_ $ do
             meta_ [charset_ "utf-8"]
+            meta_ [name_ "viewport", content_ "user-scalable=no, width=device-width, initial-scale=0.5"]
             link_ [rel_ "stylesheet", type_ "text/css", href_ "index.css"]
             script_ [src_ "index.js", defer_ ""] (mempty :: ByteString)
         body_ $
