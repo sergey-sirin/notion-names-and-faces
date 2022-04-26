@@ -21,13 +21,13 @@ data Person = Person
     , personId :: Text
     , bio :: Maybe Text
     }
-    deriving Generic
-    
+    deriving (Generic)
+
 instance Eq Person where
-    (Person {personId=personId1}) == (Person {personId=personId2}) = personId1 == personId2
-    
+    (Person{personId = personId1}) == (Person{personId = personId2}) = personId1 == personId2
+
 instance Hashable Person where
-    hashWithSalt salt (Person {personId}) = hashWithSalt salt personId
+    hashWithSalt salt (Person{personId}) = hashWithSalt salt personId
 
 maybeHead :: [a] -> Maybe a
 maybeHead (x : _) = Just x

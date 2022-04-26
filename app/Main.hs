@@ -1,14 +1,16 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE NumericUnderscores #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+
 {-# HLINT ignore "Use underscore" #-}
 
 module Main where
 
+import Control.Concurrent (threadDelay)
 import Control.Concurrent.Async (concurrently_, mapConcurrently_)
 import Control.Lens
 import Control.Monad (forM_, forever)
@@ -30,7 +32,6 @@ import Network.Wreq.Lens (responseBody)
 import Parse
 import StmContainers.Set qualified as Set
 import System.Environment (getEnv)
-import Control.Concurrent (threadDelay)
 
 data State = State
     { notionApiToken :: ByteString
@@ -73,7 +74,7 @@ main = do
 
     concurrently_
         (run 3000 (app $ State{..}))
-        (forever $ do
+        ( forever $ do
             mapConcurrently_ augmentAndUpsert persons_
             threadDelay 6_000_000_000
         )
@@ -96,11 +97,14 @@ html _data =
 
 personCard :: Person -> Html ()
 personCard _data =
-    section_ [class_ "personcard"
-             , onclick_ $
-                 "popup(`" <>
-                 name _data <>
-                 "`, `" <>
-                 fromMaybe "" (bio _data) <>
-                 "`)" ] $ do
-        img_ [src_ $ fromMaybe "https://i.redd.it/vb4e2jl0pfz21.jpg" $ avatarUri _data]
+    section_
+        [ class_ "personcard"
+        , onclick_ $
+            "popup(`"
+                <> name _data
+                <> "`, `"
+                <> fromMaybe "" (bio _data)
+                <> "`)"
+        ]
+        $ do
+            img_ [src_ $ fromMaybe "https://i.redd.it/vb4e2jl0pfz21.jpg" $ avatarUri _data]
