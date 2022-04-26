@@ -76,7 +76,7 @@ main = do
         (run 3000 (app $ State{..}))
         ( forever $ do
             mapConcurrently_ augmentAndUpsert persons_
-            threadDelay 6_000_000_000
+            threadDelay 300_000_000
         )
 
 app :: State -> Application
