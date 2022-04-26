@@ -1,3 +1,5 @@
+'use strict';
+
 const cardWidth = document.querySelector('.personcard').offsetWidth;
 const cardHeight = document.querySelector('.personcard').offsetHeight;
 const maxWidth = document.documentElement.clientWidth - cardWidth;
@@ -38,9 +40,9 @@ const state = Array.prototype.map.call(document.getElementsByClassName('personca
 
 {
 	const cb = () => {
-		for (el of state) {
+		for (const el of state) {
 			// touch another card
-			for (el2 of state.filter(x => x != el)) {
+			for (const el2 of state.filter(x => x != el)) {
 				if (distance(el, el2) < cardWidth) { bounce(el); break; }
 			}
 
