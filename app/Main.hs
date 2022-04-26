@@ -75,28 +75,23 @@ app (State{..}) _ respond = do
 
 html :: [Person] -> Html ()
 html _data =
-  doctypehtml_ $ do
-    head_ $
-      meta_ [charset_ "utf-8"]
-    body_ $
-      div_ [style_ "display: flex; flex-direction: row; flex-wrap: wrap;"] $
-        forM_ _data personCard
+    doctypehtml_ $ do
+        head_ $ do
+            meta_ [charset_ "utf-8"]
+            link_ [rel_ "stylesheet", type_ "text/css", href_ "index.css"]
+            script_ [src_ "index.js", defer_ ""] (mempty :: ByteString)
+        body_ $
+            div_ [class_ "cardscontainer"] $
+                forM_ _data personCard
 
 personCard :: Person -> Html ()
 personCard _data =
-  section_ [style_ "transform: rotate(4deg); width: 300px;"] $ do
-    img_ [src_ $ fromMaybe "https://i.redd.it/vb4e2jl0pfz21.jpg" $ avatarUri _data, style_ "width: 100px; height: 100px; object-fit: cover;"]
-    div_ . toHtml $ name _data
-    div_ . toHtml $ fromMaybe "no telegrammzz(" $ telegram _data
-    let tarakan =
-          mconcat . replicate 3 . T.unwords $
-            [ "я весёлый таракан",
-              "я бегу бегу я весёлый",
-              "таракан я бегу бегу",
-              "нефига ты не попал",
-              "я все равно убежал",
-              "я весёлый таракан",
-              "я бегу бегу",
-              "все равно я убежал"
-            ]
-    div_ . toHtml $ fromMaybe tarakan $ bio _data
+    section_ [class_ "personcard"
+             , style_ "transform: rotate(4deg);"
+             , onclick_ $
+                 "popup(`" <>
+                 name _data <>
+                 "`, `" <>
+                 fromMaybe "" (bio _data) <>
+                 "`)" ] $ do
+        img_ [src_ $ fromMaybe "https://i.redd.it/vb4e2jl0pfz21.jpg" $ avatarUri _data, style_ "width: 100px; height: 100px; object-fit: cover;"]
