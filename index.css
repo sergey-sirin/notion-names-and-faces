@@ -7,6 +7,12 @@ img {
 	border-radius: 50%;
 	height: 100px;
 	width: 100px;
+
+	transition: transform .2s;
+}
+
+img:hover {
+	transform: scale(1.5);
 }
 
 .cardscontainer {
