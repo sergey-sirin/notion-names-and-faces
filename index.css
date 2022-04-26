@@ -1,12 +1,12 @@
 .personcard {
 	position: fixed;
-	overflow: clip;
 }
 
 img {
-	width: 100px;
-	height: 100px;
 	object-fit: cover;
+	border-radius: 50%;
+	height: 100px;
+	width: 100px;
 }
 
 .cardscontainer {
