@@ -87,11 +87,10 @@ html _data =
 personCard :: Person -> Html ()
 personCard _data =
     section_ [class_ "personcard"
-             , style_ "transform: rotate(4deg);"
              , onclick_ $
                  "popup(`" <>
                  name _data <>
                  "`, `" <>
                  fromMaybe "" (bio _data) <>
                  "`)" ] $ do
-        img_ [src_ $ fromMaybe "https://i.redd.it/vb4e2jl0pfz21.jpg" $ avatarUri _data, style_ "width: 100px; height: 100px; object-fit: cover;"]
+        img_ [src_ $ fromMaybe "https://i.redd.it/vb4e2jl0pfz21.jpg" $ avatarUri _data]

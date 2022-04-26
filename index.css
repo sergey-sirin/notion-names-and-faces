@@ -1,0 +1,14 @@
+.personcard {
+	position: fixed;
+	overflow: clip;
+}
+
+img {
+	width: 100px;
+	height: 100px;
+	object-fit: cover;
+}
+
+.cardscontainer {
+	/* display: flex; flex-direction: row; flex-wrap: wrap; */
+}
